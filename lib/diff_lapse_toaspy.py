@@ -103,7 +103,19 @@ def top_radiance(tau,Temp,height,T_surf,wavel,k_lambda):
         up_rad=trans*up_rad + layer_rad
     return up_rad
 
-
+#function using planckInvert to return the brightness temperatures
+def planckInvert(wavel,radiance):
+    """input wavelength in microns and Elambda in W/m^2/micron, output
+    output brightness temperature in K
+    """
+    for index in range(radiance):
+        
+        radiance=radiance*1.e6  #convert to W/m^2/m
+        wavel=wavel*1.e-6  #convert wavelength to m
+    
+        Tbright=c2/(wavel*np.log(c1/(wavel**5.*radiances) + 1.))
+    return Tbright
+    
 if __name__=="__main__":
     r_gas=0.01  #kg/kg
     T_surf=300 #K
@@ -123,6 +135,10 @@ if __name__=="__main__":
     #
     wavelengths=wavelengths[::-1]
     rad_profs=[]
+    #what is this for?
+    
+    bright_profs=[]    
+    
     for the_lapse_rate in dT_dz:
         print "looping: "
         Temp,press,rho,height=hydrostat(T_surf,p_surf,the_lapse_rate,delta_z,num_levels)
@@ -133,13 +149,22 @@ if __name__=="__main__":
         k_lambda=np.array([0.002,0.003,0.006,0.010,0.012,0.016,0.020])*5.  
         wavel_k_tup=zip(wavelengths,k_lambda)
         rad_dict=OrderedDict()
+        
+        #putting in a dictionary to hold brightness temps 
+        bright_dict=OrderedDict() 
+        
         for wavel,k_lambda in wavel_k_tup:
             tau=find_tau(r_gas,k_lambda,rho,height)
             #convert wavel to meters
             rad_value=top_radiance(tau,Temp,height,T_surf,wavel*1.e-6,k_lambda)
             rad_dict[wavel]=rad_value
+            bright_dict[wavel]=planckInvert(wavel,rad_value)
+        
         rad_profs.append(rad_dict)
-
+        
+#brightness temps in separate list        
+        bright_profs.append(bright_dict)
+    
     plt.close('all')
     fig1,axis1=plt.subplots(1,1)
     
@@ -157,29 +182,36 @@ if __name__=="__main__":
     axis1.legend(loc='best')
     fig1.savefig('normalized_radiances.png')
 
-def planckInvert(wavel,radiances):
-    """input wavelength in microns and Elambda in W/m^2/micron, output
-    output brightness temperature in K
-    """
-    for index in range(radiances):
-        tempbrightness=[]
-        radiances=radiances*1.e6  #convert to W/m^2/m
-        wavel=wavel*1.e-6  #convert wavelength to m
-    
-        Tbright=c2/(wavel*np.log(c1/(wavel**5.*radiances) + 1.))
-    brightness=tempbrightness.append(Tbright)
-    return brightness
+
    
     fig2,axis2=plt.subplots(1,1)
     
-    axis2.plot(wavelengths,brightness)
+    axis2.plot(wavelengths,bright_profs)
     axis2.set_title('brightness temperature vs wavelength')
     axis2.set_ylabel('Brightness Temperature for each TOA radiance')
     axis2.set_xlabel('wavelenght(microns)')
     fig2.savefig('brightnesstemp')
     
+    # array for the differences of the brightness temperatures
+    diff_inbright=[]
+    
+    #now to plot the temp differences
+    for index, the_profile in enumerate(bright_profs):
+        wavelenghts=the_profile.keys()
+        brighttemps=np.array(the_profile.values())
+        
+        #this is to find the differences
+        diffs_inbright=abs(max(brighttemps)-min(brighttemps))
+
+        diff_inbright=append(diffs_inbright)
     
     
+    #code to plot the differences vs lapse rates
+    axis3.plot(dT_dz,diff_inbright)
+    axis3.set_title('temp difference vs the lapse rates')
+    axis3.set_ylabel('temp difference between 13 and 15 micron')
+    axis3.set_xlabel('lapse rates')
+    fig3.savefig('diffbrighttemplapse')
     plt.show()
 
 
