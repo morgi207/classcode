@@ -51,4 +51,5 @@ print("the rainfall rate when attenuation is 3 dbz")
 print attenfacdiff
    
 print("The rainfall rate appears to decrease signifigantly with a higher attenuation")
+print("This is because higher attenuation accounts for losses by absorption and scattering")
 print("The snowfall rate appears to be a much lower rate, possibly because it is hard for the radar to pick it up")
