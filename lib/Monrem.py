@@ -41,14 +41,18 @@ Mrmaxdbl=50 #in m/s
 vel=np.array([26,28,30,35,20,25,55,-26,-28,-30,-20])
 
 for x in range (0,10):
-    false=[]  
-    dbl=[]    
-    while vel[x] < 50:
-        false=vel-Mrmaxdbl
-        if vel[x] > 50:
-            dbl=vel+Mrmaxdbl
-            print dbl
-            print false
+   false=[]  
+   dbl=[]    
+   if vel[x] < 50:
+      thevalone=vel-Mrmaxdbl
+      false.append(thevalone)
+      if vel[x] > 50:
+           theval=vel+Mrmaxdbl
+           dbl.append(theval)
+           
+                       
+           print dbl
+           print false
             
             
 # question A24 ues 8.35a diagram
